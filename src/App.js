@@ -113,13 +113,53 @@ function App() {
                 <button className="mintButton" style={{borderRadius: '50%'}}>+</button>
               </div>
               <p className="text nftPrice titleFont" style={{fontSize: 25}}>Price : X.X ETH</p>
-              <div className="text nbNft titleFont" style={{fontSize: 25}}>Minted : XXX / 1800</div>
-              <center>
-                <button className="connectButton titleFont" style={{fontWeight: "bold"}}>Connect wallet
-                </button>
-                <br/>
-                <button className="validateButton titleFont" style={{fontWeight: "bold"}}> Mint</button>
-              </center>
+              <div className="text nbNft titleFont" style={{fontSize: 25}}>Minted : {data.totalSupply} / 1800</div>
+
+
+                {Number(data.totalSupply) == 1800 ? (
+                      <p className="title1 mintTitle" style={{fontSize: "20px", color: 'white'}}>The sale has ended.
+                      </p>
+                ) : (
+                    <>
+                        {blockchain.account === "" ||
+                        blockchain.smartContract === null ? (
+                            <s.Container ai={"center"} jc={"center"}>
+                              <p className="text nbNft titleFont" style={{fontSize: "20px", color: 'white'}}>
+                                    Connect to the Polygon network
+                                </p>
+                              <button className="connectButton titleFont" style={{fontWeight: "bold"}}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        dispatch(connect());
+                                        getData();
+                                    }}
+                                >
+                                Connect wallet
+                              </button>
+                                {blockchain.errorMsg !== "" ? (
+                                    <>
+                                        <p className="text nbNft titleFont" style={{fontSize: "20px", color: 'white'}}>
+                                            {blockchain.errorMsg}
+                                        </p>
+                                    </>
+                                ) : null}
+                            </s.Container>
+                        ) : (
+                            <s.Container ai={"center"} jc={"center"} fd={"row"}>
+                                <button className="validateButton titleFont" style={{fontWeight: "bold"}}
+                                    disabled={claimingNft ? 1 : 0}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        claimNFTs(1);
+                                        getData();
+                                    }}
+                                >
+                                    {claimingNft ? "Processing.." : "Mint"}
+                                </button>
+                            </s.Container>
+                        )}
+                    </>
+                )}
             </div>
           </div>
           <img src="./img/redlip.png" className="redlip22"/>
