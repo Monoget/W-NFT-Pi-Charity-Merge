@@ -16,7 +16,7 @@ function App() {
     if (_amount <= 0) {
       return;
     }
-    setFeedback("Minting your Nerdy Coder Clone...");
+    setFeedback("Minting Pi Charity Club nfts...");
     setClaimingNft(true);
     blockchain.smartContract.methods
       .mint(blockchain.account, _amount)
@@ -33,7 +33,7 @@ function App() {
       })
       .then((receipt) => {
         setFeedback(
-          "WOW, you now own a Nerdy Coder Clone. go visit Opensea.io to view it."
+          "WOW, you now own a Pi. go visit Opensea.io to view it."
         );
         setClaimingNft(false);
         dispatch(fetchData(blockchain.account));
@@ -67,12 +67,12 @@ function App() {
                 <button className="mintButton1 selected">1</button>
                 <button className="mintButton" style={{borderRadius: '50%'}}>+</button>
               </div>
-              <p className="text nftPrice titleFont" style={{fontSize: 25}}>Price : X.X ETH</p>
+              <p className="text nftPrice titleFont" style={{fontSize: 25}}>Price : 0.01 ETH</p>
               <div className="text nbNft titleFont" style={{fontSize: 25}}>Minted : {data.totalSupply} / 1800</div>
 
 
                 {Number(data.totalSupply) == 1800 ? (
-                      <p className="title1 mintTitle" style={{fontSize: "20px", color: 'white'}}>The sale has ended.
+                      <p className="text nbNft titleFont" style={{fontSize: "20px", color: 'white'}}>The sale has ended.
                       </p>
                 ) : (
                     <>
