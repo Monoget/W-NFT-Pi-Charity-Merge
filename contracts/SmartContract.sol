@@ -4,17 +4,22 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract NumberPiTest is ERC721Enumerable, Ownable {
+contract NumberPi is ERC721Enumerable, Ownable {
   using Strings for uint256;
 
-  string baseURI;
+  string public baseURI;
   string public baseExtension = ".json";
-  uint256 public cost = 0.01 ether;
-  uint256 public maxSupply = 100;
-  uint256 public maxMintAmount = 5;
-  bool public paused = false;
-  bool public revealed = true;
   string public notRevealedUri;
+  uint256 public cost = 0.11 ether;
+  uint256 public maxSupply = 3141;
+  uint256 public maxMintAmount = 20;
+  uint256 public nftPerAddressLimit = 1000;
+  bool public paused = false;
+  bool public revealed = false;
+  bool public onlyWhitelisted = true;
+  address[] public whitelistedAddresses;
+  mapping(address => uint256) public addressMintedBalance;
+
 
   constructor(
     string memory _name,
@@ -33,19 +38,34 @@ contract NumberPiTest is ERC721Enumerable, Ownable {
 
   // public
   function mint(uint256 _mintAmount) public payable {
+    require(!paused, "the contract is paused");
     uint256 supply = totalSupply();
-    require(!paused);
-    require(_mintAmount > 0);
-    require(_mintAmount <= maxMintAmount);
-    require(supply + _mintAmount <= maxSupply);
+    require(_mintAmount > 0, "need to mint at least 1 NFT");
+    require(_mintAmount <= maxMintAmount, "max mint amount per session exceeded");
+    require(supply + _mintAmount <= maxSupply, "max NFT limit exceeded");
 
     if (msg.sender != owner()) {
-      require(msg.value >= cost * _mintAmount);
+      if(onlyWhitelisted == true) {
+        require(isWhitelisted(msg.sender), "user is not whitelisted");
+        uint256 ownerMintedCount = addressMintedBalance[msg.sender];
+        require(ownerMintedCount + _mintAmount <= nftPerAddressLimit, "max NFT per address exceeded");
+      }
+      require(msg.value >= cost * _mintAmount, "insufficient funds");
     }
 
     for (uint256 i = 1; i <= _mintAmount; i++) {
+      addressMintedBalance[msg.sender]++;
       _safeMint(msg.sender, supply + i);
     }
+  }
+
+  function isWhitelisted(address _user) public view returns (bool) {
+    for (uint i = 0; i < whitelistedAddresses.length; i++) {
+      if (whitelistedAddresses[i] == _user) {
+        return true;
+      }
+    }
+    return false;
   }
 
   function walletOfOwner(address _owner)
@@ -88,16 +108,16 @@ contract NumberPiTest is ERC721Enumerable, Ownable {
     revealed = true;
   }
 
+  function setNftPerAddressLimit(uint256 _limit) public onlyOwner {
+    nftPerAddressLimit = _limit;
+  }
+
   function setCost(uint256 _newCost) public onlyOwner {
     cost = _newCost;
   }
 
   function setmaxMintAmount(uint256 _newmaxMintAmount) public onlyOwner {
     maxMintAmount = _newmaxMintAmount;
-  }
-
-  function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
-    notRevealedUri = _notRevealedURI;
   }
 
   function setBaseURI(string memory _newBaseURI) public onlyOwner {
@@ -108,8 +128,21 @@ contract NumberPiTest is ERC721Enumerable, Ownable {
     baseExtension = _newBaseExtension;
   }
 
+  function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
+    notRevealedUri = _notRevealedURI;
+  }
+
   function pause(bool _state) public onlyOwner {
     paused = _state;
+  }
+
+  function setOnlyWhitelisted(bool _state) public onlyOwner {
+    onlyWhitelisted = _state;
+  }
+
+  function whitelistUsers(address[] calldata _users) public onlyOwner {
+    delete whitelistedAddresses;
+    whitelistedAddresses = _users;
   }
 
   function withdraw() public payable onlyOwner {

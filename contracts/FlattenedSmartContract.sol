@@ -1,5 +1,5 @@
 /**
- *Submitted for verification at polygonscan.com on 2022-01-30
+ *Submitted for verification at polygonscan.com on 2022-02-10
 */
 
 // File: @openzeppelin/contracts/utils/Strings.sol
@@ -180,9 +180,9 @@ abstract contract Ownable is Context {
 // File: @openzeppelin/contracts/utils/Address.sol
 
 
-// OpenZeppelin Contracts v4.4.1 (utils/Address.sol)
+// OpenZeppelin Contracts (last updated v4.5.0) (utils/Address.sol)
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.1;
 
 /**
  * @dev Collection of functions related to the address type
@@ -204,17 +204,22 @@ library Address {
      *  - an address where a contract will be created
      *  - an address where a contract lived, but was destroyed
      * ====
+     *
+     * [IMPORTANT]
+     * ====
+     * You shouldn't rely on `isContract` to protect against flash loan attacks!
+     *
+     * Preventing calls from contracts is highly discouraged. It breaks composability, breaks support for smart wallets
+     * like Gnosis Safe, and does not provide security since it can be circumvented by calling from a contract
+     * constructor.
+     * ====
      */
     function isContract(address account) internal view returns (bool) {
-        // This method relies on extcodesize, which returns 0 for contracts in
-        // construction, since the code is only stored at the end of the
-        // constructor execution.
+        // This method relies on extcodesize/address.code.length, which returns 0
+        // for contracts in construction, since the code is only stored at the end
+        // of the constructor execution.
 
-        uint256 size;
-        assembly {
-            size := extcodesize(account)
-        }
-        return size > 0;
+        return account.code.length > 0;
     }
 
     /**
@@ -634,7 +639,7 @@ interface IERC721 is IERC165 {
 // File: @openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol
 
 
-// OpenZeppelin Contracts v4.4.1 (token/ERC721/extensions/IERC721Enumerable.sol)
+// OpenZeppelin Contracts (last updated v4.5.0) (token/ERC721/extensions/IERC721Enumerable.sol)
 
 pragma solidity ^0.8.0;
 
@@ -653,7 +658,7 @@ interface IERC721Enumerable is IERC721 {
      * @dev Returns a token ID owned by `owner` at a given `index` of its token list.
      * Use along with {balanceOf} to enumerate all of ``owner``'s tokens.
      */
-    function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256 tokenId);
+    function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256);
 
     /**
      * @dev Returns a token ID at a given `index` of all the tokens stored by the contract.
@@ -694,7 +699,7 @@ interface IERC721Metadata is IERC721 {
 // File: @openzeppelin/contracts/token/ERC721/ERC721.sol
 
 
-// OpenZeppelin Contracts v4.4.1 (token/ERC721/ERC721.sol)
+// OpenZeppelin Contracts (last updated v4.5.0) (token/ERC721/ERC721.sol)
 
 pragma solidity ^0.8.0;
 
@@ -981,6 +986,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _owners[tokenId] = to;
 
         emit Transfer(address(0), to, tokenId);
+
+        _afterTokenTransfer(address(0), to, tokenId);
     }
 
     /**
@@ -1005,6 +1012,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         delete _owners[tokenId];
 
         emit Transfer(owner, address(0), tokenId);
+
+        _afterTokenTransfer(owner, address(0), tokenId);
     }
 
     /**
@@ -1023,7 +1032,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         address to,
         uint256 tokenId
     ) internal virtual {
-        require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
+        require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer from incorrect owner");
         require(to != address(0), "ERC721: transfer to the zero address");
 
         _beforeTokenTransfer(from, to, tokenId);
@@ -1036,6 +1045,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _owners[tokenId] = to;
 
         emit Transfer(from, to, tokenId);
+
+        _afterTokenTransfer(from, to, tokenId);
     }
 
     /**
@@ -1111,6 +1122,23 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
      */
     function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual {}
+
+    /**
+     * @dev Hook that is called after any transfer of tokens. This includes
+     * minting and burning.
+     *
+     * Calling conditions:
+     *
+     * - when `from` and `to` are both non-zero.
+     * - `from` and `to` are never both zero.
+     *
+     * To learn more about hooks, head to xref:ROOT:extending-contracts.adoc#using-hooks[Using Hooks].
+     */
+    function _afterTokenTransfer(
         address from,
         address to,
         uint256 tokenId
@@ -1282,7 +1310,7 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
     }
 }
 
-// File: contracts/Test3412.sol
+// File: contracts/thepicharityclub.sol
 
 
 
@@ -1290,17 +1318,22 @@ pragma solidity >=0.7.0 <0.9.0;
 
 
 
-contract NumberPiTest is ERC721Enumerable, Ownable {
+contract NumberPi is ERC721Enumerable, Ownable {
     using Strings for uint256;
 
-    string baseURI;
+    string public baseURI;
     string public baseExtension = ".json";
-    uint256 public cost = 0.01 ether;
-    uint256 public maxSupply = 100;
-    uint256 public maxMintAmount = 5;
-    bool public paused = false;
-    bool public revealed = true;
     string public notRevealedUri;
+    uint256 public cost = 0.11 ether;
+    uint256 public maxSupply = 3141;
+    uint256 public maxMintAmount = 20;
+    uint256 public nftPerAddressLimit = 1000;
+    bool public paused = false;
+    bool public revealed = false;
+    bool public onlyWhitelisted = true;
+    address[] public whitelistedAddresses;
+    mapping(address => uint256) public addressMintedBalance;
+
 
     constructor(
         string memory _name,
@@ -1319,19 +1352,34 @@ contract NumberPiTest is ERC721Enumerable, Ownable {
 
     // public
     function mint(uint256 _mintAmount) public payable {
+        require(!paused, "the contract is paused");
         uint256 supply = totalSupply();
-        require(!paused);
-        require(_mintAmount > 0);
-        require(_mintAmount <= maxMintAmount);
-        require(supply + _mintAmount <= maxSupply);
+        require(_mintAmount > 0, "need to mint at least 1 NFT");
+        require(_mintAmount <= maxMintAmount, "max mint amount per session exceeded");
+        require(supply + _mintAmount <= maxSupply, "max NFT limit exceeded");
 
         if (msg.sender != owner()) {
-            require(msg.value >= cost * _mintAmount);
+            if(onlyWhitelisted == true) {
+                require(isWhitelisted(msg.sender), "user is not whitelisted");
+                uint256 ownerMintedCount = addressMintedBalance[msg.sender];
+                require(ownerMintedCount + _mintAmount <= nftPerAddressLimit, "max NFT per address exceeded");
+            }
+            require(msg.value >= cost * _mintAmount, "insufficient funds");
         }
 
         for (uint256 i = 1; i <= _mintAmount; i++) {
+            addressMintedBalance[msg.sender]++;
             _safeMint(msg.sender, supply + i);
         }
+    }
+
+    function isWhitelisted(address _user) public view returns (bool) {
+        for (uint i = 0; i < whitelistedAddresses.length; i++) {
+            if (whitelistedAddresses[i] == _user) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function walletOfOwner(address _owner)
@@ -1374,16 +1422,16 @@ contract NumberPiTest is ERC721Enumerable, Ownable {
         revealed = true;
     }
 
+    function setNftPerAddressLimit(uint256 _limit) public onlyOwner {
+        nftPerAddressLimit = _limit;
+    }
+
     function setCost(uint256 _newCost) public onlyOwner {
         cost = _newCost;
     }
 
     function setmaxMintAmount(uint256 _newmaxMintAmount) public onlyOwner {
         maxMintAmount = _newmaxMintAmount;
-    }
-
-    function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
-        notRevealedUri = _notRevealedURI;
     }
 
     function setBaseURI(string memory _newBaseURI) public onlyOwner {
@@ -1394,8 +1442,21 @@ contract NumberPiTest is ERC721Enumerable, Ownable {
         baseExtension = _newBaseExtension;
     }
 
+    function setNotRevealedURI(string memory _notRevealedURI) public onlyOwner {
+        notRevealedUri = _notRevealedURI;
+    }
+
     function pause(bool _state) public onlyOwner {
         paused = _state;
+    }
+
+    function setOnlyWhitelisted(bool _state) public onlyOwner {
+        onlyWhitelisted = _state;
+    }
+
+    function whitelistUsers(address[] calldata _users) public onlyOwner {
+        delete whitelistedAddresses;
+        whitelistedAddresses = _users;
     }
 
     function withdraw() public payable onlyOwner {

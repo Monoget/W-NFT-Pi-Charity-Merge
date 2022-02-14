@@ -1,5 +1,11 @@
 @import url(https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css);
 @import url(https://fonts.googleapis.com/css?family=Acme:400);
+@import url('https://fonts.googleapis.com/css2?family=Chewy&display=swap');
+
+@font-face {
+    font-family: 'Jumble';
+    src: url(https://frogbid.github.io/W-Moon--Society/assets/font/Jumble.otf) format('otf');
+}
 
 a {
     text-decoration: none
@@ -276,7 +282,7 @@ a {
     --font-family-acme: "Acme", Helvetica;
     --font-family-helveticaneue-regular: "HelveticaNeue-Regular", Helvetica;
     --font-family-jaapokki-regular: "Jaapokki-Regular", Helvetica;
-    --font-family-jumble: "Jumble", Helvetica;
+    --font-family-jumble: 'Chewy', cursive;
     --font-family-jumble-regular: "Jumble-Regular", Helvetica
 }
 
@@ -2191,6 +2197,8 @@ a {
 }
 
 .mintTitle {
+    font-family:'Chewy', cursive;
+    letter-spacing: 5px;
     width: 100%;
     text-transform: uppercase;
     font-size: 80px;
