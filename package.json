@@ -2,7 +2,7 @@
   "name": "the_pi_charity_club",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://nftmint.frogbid.com/",
+  "homepage": "https://minting.thepicharityclub.com/",
   "dependencies": {
     "@openzeppelin/contracts": "^4.2.0",
     "@testing-library/jest-dom": "^5.11.4",
